@@ -194,52 +194,59 @@ static void _handle_async_event(lwip_event_packet_t *e)
     if (e->arg == NULL)
     {
         // do nothing when arg is NULL
-        //ets_printf("event arg == NULL: 0x%08x\n", e->recv.pcb);
+        // ets_printf("event arg == NULL: 0x%08x\n", e->recv.pcb);
     }
     else if (e->event == LWIP_TCP_CLEAR)
     {
+        // ets_printf("remove \n");
         _remove_events_with_arg(e->arg);
     }
     else if (e->event == LWIP_TCP_RECV)
     {
-        //ets_printf("-R: 0x%08x\n", e->recv.pcb);
+        // ets_printf("-R: 0x%08x\n", e->recv.pcb);
         AsyncClient::_s_recv(e->arg, e->recv.pcb, e->recv.pb, e->recv.err);
     }
     else if (e->event == LWIP_TCP_FIN)
     {
-        //ets_printf("-F: 0x%08x\n", e->fin.pcb);
+        // ets_printf("-F: 0x%08x\n", e->fin.pcb);
         AsyncClient::_s_fin(e->arg, e->fin.pcb, e->fin.err);
     }
     else if (e->event == LWIP_TCP_SENT)
     {
-        //ets_printf("-S: 0x%08x\n", e->sent.pcb);
+        // ets_printf("-S: 0x%08x\n", e->sent.pcb);
         AsyncClient::_s_sent(e->arg, e->sent.pcb, e->sent.len);
     }
     else if (e->event == LWIP_TCP_POLL)
     {
-        //ets_printf("-P: 0x%08x\n", e->poll.pcb);
+        // ets_printf("-P: 0x%08x\n", e->poll.pcb);
         AsyncClient::_s_poll(e->arg, e->poll.pcb);
     }
     else if (e->event == LWIP_TCP_ERROR)
     {
-        //ets_printf("-E: 0x%08x %d\n", e->arg, e->error.err);
+        // ets_printf("-E: 0x%08x %d\n", e->arg, e->error.err);
         AsyncClient::_s_error(e->arg, e->error.err);
     }
     else if (e->event == LWIP_TCP_CONNECTED)
     {
-        //ets_printf("C: 0x%08x 0x%08x %d\n", e->arg, e->connected.pcb, e->connected.err);
+        // ets_printf("C: 0x%08x 0x%08x %d\n", e->arg, e->connected.pcb, e->connected.err);
         AsyncClient::_s_connected(e->arg, e->connected.pcb, e->connected.err);
     }
     else if (e->event == LWIP_TCP_ACCEPT)
     {
-        //ets_printf("A: 0x%08x 0x%08x\n", e->arg, e->accept.client);
+        // ets_printf("A: 0x%08x 0x%08x\n", e->arg, e->accept.client);
         AsyncServer::_s_accepted(e->arg, e->accept.client);
     }
     else if (e->event == LWIP_TCP_DNS)
     {
-        //ets_printf("D: 0x%08x %s = %s\n", e->arg, e->dns.name, ipaddr_ntoa(&e->dns.addr));
+        // ets_printf("D: 0x%08x %s = %s\n", e->arg, e->dns.name, ipaddr_ntoa(&e->dns.addr));
         AsyncClient::_s_dns_found(e->dns.name, &e->dns.addr, e->arg);
     }
+    else
+    {
+        // unhandled
+        ets_printf("UNHANDLED \n");
+    }
+
     free((void *)(e));
 }
 
@@ -284,7 +291,8 @@ static bool _start_async_task()
     }
     if (!_async_service_task_handle)
     {
-        xTaskCreateUniversal(_async_service_task, "async_tcp", 8192 * 2, NULL, 1, &_async_service_task_handle, CONFIG_ASYNC_TCP_RUNNING_CORE);
+        //xTaskCreateUniversal(_async_service_task, "async_tcp", 8192 * 2, NULL, 1, &_async_service_task_handle, CONFIG_ASYNC_TCP_RUNNING_CORE);
+        xTaskCreate(_async_service_task, "async_tcp", 8192 * 2, NULL, 1, &_async_service_task_handle);
         if (!_async_service_task_handle)
         {
             return false;
